@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SMSTriClass - SMS Classifier Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
+    <style>
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes zoomIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .fade-in-down {
+        animation: fadeInDown 0.8s ease-out;
+      }
+      .zoom-in {
+        animation: zoomIn 0.6s ease-out;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    <!-- Navbar -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md fixed w-full z-10">
+      <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <a
+          href="#"
+          class="text-2xl font-bold text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 transition"
+          >SMSTriClass</a
+        >
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex space-x-8 items-center">
+          <a
+            href="#"
+            class="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-500 transition"
+            >Home</a
+          >
+          <a
+            href="#classifier"
+            class="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-500 transition"
+            >Classifier</a
+          >
+          <a
+            href="#about"
+            class="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-500 transition"
+            >About</a
+          >
+          <a
+            href="#contribute"
+            class="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-500 transition"
+            >Contribute</a
+          >
+
+          <!-- Dark Mode Toggle -->
+          <button id="darkModeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+            <!-- Sun Icon -->
+            <svg id="lightIcon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+            <!-- Moon Icon -->
+            <svg id="darkIcon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+            </svg>
+          </button>
+        </div>
+        <!-- Mobile Toggle Button -->
+        <button id="nav-toggle" class="md:hidden text-gray-600 focus:outline-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+      </div>
+      <!-- Mobile Menu -->
+      <div id="nav-content" class="hidden md:hidden bg-white dark:bg-gray-800">
+        <a
+          href="#"
+          class="block px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >Home</a
+        >
+        <a
+          href="#classifier"
+          class="block px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >Classifier</a
+        >
+        <a
+          href="#about"
+          class="block px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >About</a
+        >
+        <a
+          href="#contribute"
+          class="block px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+          >Contribute</a
+        >
+
+        <!-- Mobile Dark Mode Toggle -->
+        <button id="mobileDarkModeToggle" class="w-full text-left px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition flex items-center">
+          <span>Toggle Dark Mode</span>
+          <svg class="w-5 h-5 ml-2 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+          <svg class="w-5 h-5 ml-2 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="pt-24 pb-16 bg-gradient-to-r from-green-500 to-teal-600">
+      <div class="container mx-auto px-6 text-center">
+        <h1
+          class="text-4xl md:text-5xl font-extrabold text-white mb-4 fade-in-down"
+        >
+          Triple-Category SMS Classification
+        </h1>
+        <p class="text-white/90 mb-8">
+          Detect Normal, Fraud &amp; Promotional messages instantly with our
+          AI-driven classifier.
+        </p>
+        <a
+          href="#classifier"
+          class="inline-block bg-white text-green-600 px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 zoom-in"
+          >Start Classifying</a
+        >
+      </div>
+    </section>
+
+    <!-- Classifier -->
+    <section id="classifier" class="container mx-auto px-6 py-16">
+      <div
+        class="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg hover:shadow-2xl transition"
+      >
+        <label
+          for="messageInput"
+          class="block text-lg font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >Enter your SMS text:</label
+        >
+        <textarea
+          id="messageInput"
+          rows="4"
+          class="w-full border border-gray-300 dark:border-gray-600 rounded-md p-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-green-500 focus:ring focus:ring-green-200 dark:focus:ring-green-800 transition"
+          placeholder="Type the SMS content here..."
+        ></textarea>
+        <button
+          onclick="classifySMS()"
+          class="mt-6 w-full bg-green-600 text-white py-3 rounded-md font-semibold hover:bg-green-700 transition"
+        >
+          Classify SMS
+        </button>
+        <div id="result" class="mt-6"></div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="bg-white dark:bg-gray-800 py-16">
+      <div class="container mx-auto px-6">
+        <h2 class="text-3xl font-bold text-center mb-8 dark:text-gray-200">Why SMSTriClass?</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div
+            class="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition"
+          >
+            <h3 class="text-xl font-semibold mb-2 dark:text-gray-200">Multi-Class AI</h3>
+            <p class="dark:text-gray-300">
+              Classifies messages into Normal, Fraud, and
+              Promotional categories.
+            </p>
+          </div>
+          <div
+            class="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition"
+          >
+            <h3 class="text-xl font-semibold mb-2 dark:text-gray-200">Fast &amp; Accurate</h3>
+            <p class="dark:text-gray-300">
+              Real-time SMS analysis powered by optimized machine learning
+              models.
+            </p>
+          </div>
+          <div
+            class="text-center p-6 bg-gray-50 dark:bg-gray-700 rounded-lg shadow hover:shadow-lg transition"
+          >
+            <h3 class="text-xl font-semibold mb-2 dark:text-gray-200">User Privacy</h3>
+            <p class="dark:text-gray-300">
+              We process your SMS securely on the server, without storing or saving your data.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contribution -->
+    <section id="contribute" class="container mx-auto px-6 py-16">
+      <h2 class="text-3xl font-bold text-center mb-8 dark:text-gray-200">
+        Contribute to Our Dataset
+      </h2>
+      <p class="text-center text-gray-600 dark:text-gray-400 mb-6">
+        Help us improve accuracy by submitting SMS samples and your suggested
+        category. We'll review and add to our dataset manually.
+      </p>
+      <form class="max-w-xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
+        <div class="mb-4">
+          <label for="contribName" class="block text-gray-700 dark:text-gray-300 mb-2">Name (optional)</label>
+          <input
+            type="text"
+            id="contribName"
+            class="w-full border border-gray-300 dark:border-gray-600 rounded-md p-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-green-500 focus:ring focus:ring-green-200 dark:focus:ring-green-800 transition"
+            placeholder="Your name"
+          />
+        </div>
+        <div class="mb-4">
+          <label for="contribEmail" class="block text-gray-700 dark:text-gray-300 mb-2">Email (optional)</label>
+          <input
+            type="email"
+            id="contribEmail"
+            class="w-full border border-gray-300 dark:border-gray-600 rounded-md p-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-green-500 focus:ring focus:ring-green-200 dark:focus:ring-green-800 transition"
+            placeholder="you@example.com"
+          />
+        </div>
+        <div class="mb-4">
+          <label for="smsText" class="block text-gray-700 dark:text-gray-300 mb-2">SMS Text</label>
+          <textarea
+            id="smsText"
+            rows="4"
+            class="w-full border border-gray-300 dark:border-gray-600 rounded-md p-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-green-500 focus:ring focus:ring-green-200 dark:focus:ring-green-800 transition"
+            placeholder="Paste the SMS content here..."
+          ></textarea>
+        </div>
+        <div class="mb-4">
+          <label for="smsCategory" class="block text-gray-700 dark:text-gray-300 mb-2">Suggested Category</label>
+          <select
+            id="smsCategory"
+            class="w-full border border-gray-300 dark:border-gray-600 rounded-md p-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-green-500 focus:ring focus:ring-green-200 dark:focus:ring-green-800 transition"
+          >
+            <option value="normal">Normal</option>
+            <option value="penipuan">Penipuan</option>
+            <option value="promo">Promotional</option>
+          </select>
+        </div>
+        <button
+          id="submitBtn"
+          type="button"
+          onclick="submitContribution()"
+          class="w-full bg-green-600 text-white py-3 rounded-md font-semibold hover:bg-green-700 transition"
+        >
+          Submit Contribution
+        </button>
+        <div id="loadingSpinner" class="hidden mt-4 flex justify-center">
+          <svg class="animate-spin h-6 w-6 text-green-600 dark:text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </div>
+      </form>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 dark:bg-gray-900 dark:text-gray-400 py-8">
+      <div
+        class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center"
+      >
+        <p class="text-sm">&copy; 2025 SMSTriClass. All rights reserved.</p>
+        <div class="flex space-x-6 mt-4 md:mt-0">
+          <a href="#" class="hover:text-white transition">Privacy Policy</a>
+          <a href="#" class="hover:text-white transition">Terms of Service</a>
+          <a href="#" class="hover:text-white transition">Contact Us</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- API & Contribution Script -->
+    <script>
+      async function classifySMS() {
+        const message = document.getElementById("messageInput").value;
+        const resultDiv = document.getElementById("result");
+
+        resultDiv.innerHTML = `
+          <div class="flex justify-center mt-4">
+            <svg class="animate-spin h-6 w-6 text-green-600 dark:text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+          </div>`;
+        const button = document.querySelector("button[onclick='classifySMS()']");
+        button.disabled = true;
+        button.innerText = "Classifying...";
+
+        if (!message) {
+          alert("Please enter the SMS content!");
+          resultDiv.innerHTML = "";
+          button.disabled = false;
+          button.innerText = "Classify SMS";
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:5001/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: 'include',
+            body: JSON.stringify({ text: message }),
+          });
+          const data = await response.json();
+          if (data.error) {
+            throw new Error(data.error);
+          }
+          let explanation = "";
+          if (data.prediction === "penipuan") {
+            explanation = "Berdasarkan data yang telah diproses oleh sistem, teks tersebut mengandung pola kata yang sering ditemukan dalam SMS penipuan. Mohon verifikasi ulang informasi serta nomor pengirim SMS sebelum mengambil tindakan.";
+          } else if (data.prediction === "normal") {
+            explanation = "Berdasarkan hasil pemrosesan, teks ini tidak mengandung pola kata yang mencurigakan dan terindikasi sebagai SMS normal. Namun, pengguna tetap disarankan untuk berhati-hati dan memverifikasi informasi apabila merasa ragu.";
+          } else if (data.prediction === "promo") {
+            explanation = "Berdasarkan hasil pemrosesan, teks ini mengandung pola kata yang umum ditemukan pada SMS promosi. Meski bersifat informatif, disarankan untuk tetap waspada terhadap potensi penipuan tersembunyi dan memverifikasi sumber pengirim.";
+          }
+          resultDiv.innerHTML = `
+            <div class="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-600 dark:border-green-500 rounded-md transition">
+              <p class="dark:text-gray-200"><strong>Category:</strong> ${data.prediction}</p>
+              <p class="mt-2 text-gray-700 dark:text-gray-300 text-sm">${explanation}</p>
+            </div>`;
+        } catch (err) {
+          console.error(err);
+          alert("Unable to connect to the API. Ensure the server is running.");
+          resultDiv.innerHTML = "";
+        } finally {
+          button.disabled = false;
+          button.innerText = "Classify SMS";
+        }
+      }
+
+      async function submitContribution() {
+        const name = document.getElementById("contribName")?.value || null;
+        const email = document.getElementById("contribEmail").value;
+        const sms_text = document.getElementById("smsText").value;
+        const category = document.getElementById("smsCategory").value;
+        const button = document.getElementById("submitBtn");
+        const spinner = document.getElementById("loadingSpinner");
+
+        if (!sms_text || !category) {
+          alert("Please enter SMS text and select a category.");
+          return;
+        }
+
+        spinner.classList.remove("hidden");
+        button.disabled = true;
+        button.innerText = "Submitting...";
+
+        try {
+          const response = await fetch(
+            "http://localhost:5001/submit-contribution",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, email, sms_text, category }),
+            }
+          );
+
+          const result = await response.json();
+          if (result.success) {
+            alert("✅ Thank you! Your contribution has been submitted.");
+            document.querySelector("form").reset();
+          } else {
+            alert("❌ Submission failed. Please try again.");
+          }
+        } catch (err) {
+          console.error(err);
+          alert("⚠️ API error. Make sure your backend server is running.");
+        } finally {
+          spinner.classList.add("hidden");
+          button.disabled = false;
+          button.innerText = "Submit Contribution";
+        }
+      }
+
+      // Toggle mobile nav
+      document.getElementById("nav-toggle").addEventListener("click", () => {
+        const navContent = document.getElementById("nav-content");
+        navContent.classList.toggle("hidden");
+      });
+
+      // Dark mode functionality
+      function initDarkMode() {
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'true' || 
+            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+
+        function toggleDarkMode() {
+          document.documentElement.classList.toggle('dark');
+          localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        }
+
+        // Add click handlers for both desktop and mobile dark mode toggles
+        document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('mobileDarkModeToggle').addEventListener('click', toggleDarkMode);
+      }
+
+      // Initialize dark mode
+      initDarkMode();
+    </script>
+  </body>
+</html>

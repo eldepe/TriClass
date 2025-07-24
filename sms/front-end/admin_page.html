@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Contributions & Dataset</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind custom animations
+    tailwind.config = {
+      theme: {
+        extend: {
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            fadeOut: {
+              '0%': { opacity: '1' },
+              '100%': { opacity: '0' }
+            }
+          },
+          animation: {
+            fadeIn: 'fadeIn 0.4s ease-out forwards',
+            fadeOut: 'fadeOut 0.4s ease-out forwards',
+            'spin-slow': 'spin 3s linear infinite'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="font-sans text-gray-800 bg-gradient-to-r from-green-50 to-white min-h-screen">
+
+  <!-- Login Overlay -->
+  <div id="loginOverlay" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md animate-fadeIn">
+      <h2 class="text-3xl font-bold text-center text-green-600 mb-6">Admin Login</h2>
+      <input id="loginUsername" type="text" placeholder="Username" class="w-full mb-4 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-200 focus:border-green-500 transition" />
+      <input id="loginPassword" type="password" placeholder="Password" class="w-full mb-6 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-200 focus:border-green-500 transition" />
+      <button id="loginBtn" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">Login</button>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <header id="navbar" class="fixed top-0 w-full bg-white shadow-lg z-50 hidden">
+    <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+      <h1 class="text-2xl font-bold text-green-600">SMSTriClass Admin</h1>
+      <button id="refreshBtn" aria-label="Refresh Data" class="p-2 rounded-full hover:bg-gray-100 transition">
+        <svg class="h-6 w-6 text-green-600 animate-spin-slow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+  <div id="spacer" class="h-20"></div>
+
+  <!-- Loading Overlay -->
+  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center hidden z-40">
+    <svg class="animate-spin h-12 w-12 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+    </svg>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-6 right-6 hidden items-center space-x-3 px-4 py-3 rounded-lg shadow-lg z-50 text-white"></div>
+
+  <!-- Main -->
+  <main id="dashboardContent" class="max-w-7xl mx-auto py-10 px-6 hidden">
+    <div class="bg-white shadow-xl rounded-2xl p-6 animate-fadeIn">
+
+      <!-- Tabs -->
+      <div class="flex space-x-6 border-b border-gray-200 mb-6">
+        <button id="tabContrib" class="pb-2 border-b-2 border-green-600 text-green-600 font-semibold">Contributions</button>
+        <button id="tabDataset" class="pb-2 border-b-2 border-transparent text-gray-600 hover:text-teal-600 font-semibold">Accepted Dataset</button>
+      </div>
+
+      <!-- Export Button -->
+      <div id="exportContainer" class="hidden mb-4">
+        <button onclick="trainNewDataset()" class="bg-teal-600 text-white px-5 py-2 rounded-xl font-semibold hover:bg-teal-700 shadow transition-all duration-300 flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+          </svg>
+          <span>Train New Dataset</span>
+        </button>
+      </div>
+
+      <!-- Training Result Modal -->
+      <div id="trainingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+          <div class="text-center mb-6">
+            <div id="modalIcon" class="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center">
+              <!-- Icon will be injected here -->
+            </div>
+            <h3 id="modalTitle" class="text-2xl font-bold mb-2"><!-- Title will be injected here --></h3>
+            <p id="modalMessage" class="text-gray-600"><!-- Message will be injected here --></p>
+          </div>
+          <button onclick="closeTrainingModal()" class="w-full bg-teal-600 text-white py-3 rounded-xl font-semibold hover:bg-teal-700 transition-colors duration-300">
+            Close
+          </button>
+        </div>
+      </div>
+
+      <!-- Contributions -->
+      <section id="contribSection" class="overflow-x-auto no-scrollbar">
+        <table class="min-w-full divide-y divide-gray-200 table-auto">
+          <thead class="bg-green-600 text-white">
+            <tr>
+              <th class="px-6 py-3 text-left text-sm font-medium uppercase">Date</th>
+              <th class="px-6 py-3 text-left text-sm font-medium uppercase">SMS Text</th>
+              <th class="px-6 py-3 text-left text-sm font-medium uppercase">Name</th>
+              <th class="px-6 py-3 text-left text-sm font-medium uppercase">Email</th>
+              <th class="px-6 py-3 text-left text-sm font-medium uppercase">Category</th>
+              <th class="px-6 py-3 text-left text-sm font-medium uppercase">Status</th>
+              <th class="px-6 py-3 text-center text-sm font-medium uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="contributions" class="divide-y divide-gray-100 bg-white"></tbody>
+        </table>
+      </section>
+
+      <!-- Dataset -->
+      <section id="datasetSection" class="hidden overflow-x-auto no-scrollbar">
+        <table class="min-w-full divide-y divide-gray-200 table-auto">
+          <thead class="bg-teal-600 text-white">
+            <tr>
+              <th class="px-6 py-3 text-left text-sm font-medium uppercase">Date</th>
+              <th class="px-6 py-3 text-left text-sm font-medium uppercase">SMS Text</th>
+              <th class="px-6 py-3 text-left text-sm font-medium uppercase">Label</th>
+            </tr>
+          </thead>
+          <tbody id="dataset" class="divide-y divide-gray-100 bg-white"></tbody>
+        </table>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    let activeTab = 'contrib';
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('loginBtn').addEventListener('click', loginAdmin);
+      document.getElementById('refreshBtn').addEventListener('click', () => activeTab==='contrib'?fetchContributions():fetchDataset());
+      document.getElementById('tabContrib').addEventListener('click', () => switchTab('contrib'));
+      document.getElementById('tabDataset').addEventListener('click', () => switchTab('dataset'));
+      
+      // Check session on page load
+      checkSession();
+    });
+
+    function switchTab(tab) {
+      activeTab = tab;
+      // Existing tab toggle logic
+      document.getElementById('tabContrib').classList.toggle('border-green-600', tab==='contrib');
+      document.getElementById('tabContrib').classList.toggle('text-green-600', tab==='contrib');
+      document.getElementById('tabContrib').classList.toggle('border-transparent', tab!=='contrib');
+      document.getElementById('tabContrib').classList.toggle('text-gray-600', tab!=='contrib');
+      document.getElementById('tabDataset').classList.toggle('border-teal-600', tab==='dataset');
+      document.getElementById('tabDataset').classList.toggle('text-teal-600', tab==='dataset');
+      document.getElementById('tabDataset').classList.toggle('border-transparent', tab!=='dataset');
+      document.getElementById('tabDataset').classList.toggle('text-gray-600', tab!=='dataset');
+      document.getElementById('contribSection').classList.toggle('hidden', tab!=='contrib');
+      document.getElementById('datasetSection').classList.toggle('hidden', tab!=='dataset');
+      document.getElementById('exportContainer').classList.toggle('hidden', tab!=='dataset');
+
+      if (tab === 'contrib') fetchContributions(); 
+      else fetchDataset();
+    }
+
+    function exportToCSV() {
+      // Remove or comment out the old exportToCSV function if not needed
+    }
+
+    async function trainNewDataset() {
+      if(!confirm('Are you sure you want to train a new model with the current dataset?')) return;
+      
+      overlay.classList.remove('hidden');
+      try {
+        const response = await fetch('http://localhost:5001/add-to-dataset', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        if (response.status === 401) {
+          handleUnauthorized();
+          return;
+        }
+        if (!response.ok) {
+          throw new Error('Failed to train dataset');
+        }
+        const result = await response.json();
+        showTrainingModal(response.ok, result);
+      } catch (error) {
+        console.error('Training error:', error);
+        showTrainingModal(false, { error: 'Server error. Please try again.' });
+      } finally {
+        overlay.classList.add('hidden');
+      }
+    }
+
+    function showTrainingModal(success, result) {
+      const modal = document.getElementById('trainingModal');
+      const content = document.getElementById('modalContent');
+      const icon = document.getElementById('modalIcon');
+      const title = document.getElementById('modalTitle');
+      const message = document.getElementById('modalMessage');
+
+      // Set up the modal content based on success/failure
+      if (success) {
+        icon.innerHTML = `
+          <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        `;
+        icon.className = 'mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center bg-green-100';
+        title.textContent = 'Training Completed';
+        title.className = 'text-2xl font-bold mb-2 text-green-600';
+        message.textContent = result.message || 'Dataset has been successfully processed and model training completed.';
+      } else {
+        icon.innerHTML = `
+          <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        `;
+        icon.className = 'mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center bg-red-100';
+        title.textContent = 'Training Failed';
+        title.className = 'text-2xl font-bold mb-2 text-red-600';
+        message.textContent = result.error || 'An error occurred during the training process.';
+      }
+
+      // Show the modal with animation
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function closeTrainingModal() {
+      const modal = document.getElementById('trainingModal');
+      const content = document.getElementById('modalContent');
+      
+      // Animate out
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+      
+      // Hide modal after animation
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    async function loginAdmin() {
+      const u=loginUsername.value.trim(), p=loginPassword.value.trim();
+      if(!u||!p){showToast('Username and password required','error');return;}
+      overlay.classList.remove('hidden');
+      try {
+        const res=await fetch('http://localhost:5001/admin-login',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          credentials: 'include',
+          body:JSON.stringify({username:u,password:p})
+        });
+        const result=await res.json();
+        if(res.ok && result.success){
+          showToast('Login successful','success');
+          loginOverlay.classList.add('hidden');
+          navbar.classList.remove('hidden');
+          dashboardContent.classList.remove('hidden');
+          switchTab('contrib');
+        } else {
+          showToast(result.message || 'Invalid credentials','error');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        showToast('Server error. Please try again.','error');
+      } finally {
+        overlay.classList.add('hidden');
+      }
+    }
+
+    async function checkSession() {
+      try {
+        const response = await fetch('http://localhost:5001/check-session', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Session check failed');
+        }
+        const data = await response.json();
+        if (data.logged_in) {
+          loginOverlay.classList.add('hidden');
+          navbar.classList.remove('hidden');
+          dashboardContent.classList.remove('hidden');
+          switchTab('contrib');
+        }
+      } catch (error) {
+        console.error('Session check failed:', error);
+        // Don't show error toast for session check
+      }
+    }
+
+    async function handleUnauthorized() {
+      showToast('Session expired. Please login again.', 'error');
+      loginOverlay.classList.remove('hidden');
+      navbar.classList.add('hidden');
+      dashboardContent.classList.add('hidden');
+    }
+
+    async function fetchContributions() {
+      contributions.innerHTML=''; overlay.classList.remove('hidden');
+      try {
+        const response = await fetch('http://localhost:5001/get-all-contribution', {
+          credentials: 'include'
+        });
+        if (response.status === 401) {
+          handleUnauthorized();
+          return;
+        }
+        if (!response.ok) {
+          throw new Error('Failed to fetch contributions');
+        }
+        const data = await response.json();
+        if (!data.data) {
+          throw new Error('Invalid data format');
+        }
+        data.data.forEach(c => {
+          const tr=document.createElement('tr');
+          tr.className='hover:bg-green-50 transition';
+          tr.dataset.id=c.id;
+          const actions=c.status==='pending'
+            ? `<div class="flex justify-center gap-2">
+                 <button onclick="updateStatus(${c.id},'approved')" class="px-3 py-1 min-w-[80px] text-sm font-medium bg-green-600 text-white rounded-md hover:bg-green-700">Accept</button>
+                 <button onclick="updateStatus(${c.id},'rejected')" class="px-3 py-1 min-w-[80px] text-sm font-medium bg-red-600 text-white rounded-md hover:bg-red-700">Reject</button>
+               </div>` : '';
+          tr.innerHTML=`
+            <td class="px-6 py-4 text-gray-500 text-sm">${new Date(c.created_at).toLocaleString()}</td>
+            <td class="px-6 py-4 text-gray-700 text-sm">${c.sms_text}</td>
+            <td class="px-6 py-4 text-gray-700 text-sm">${c.name||'-'}</td>
+            <td class="px-6 py-4 text-gray-700 text-sm">${c.email||'-'}</td>
+            <td class="px-6 py-4 text-blue-600 font-medium text-sm">${c.suggested_category}</td>
+            <td class="px-6 py-4 text-sm">
+              <span class="px-2 inline-flex text-xs font-semibold rounded-full ${
+                c.status==='pending'  ? 'bg-yellow-100 text-yellow-800' :
+                c.status==='approved' ? 'bg-green-100 text-green-800' :
+                                        'bg-red-100 text-red-800'
+              }">${c.status}</span>
+            </td>
+            <td id="actions-${c.id}" class="px-6 py-4">${actions}</td>`;
+          contributions.appendChild(tr);
+        });
+      } catch (error) {
+        console.error('Fetch contributions error:', error);
+        showToast('Failed to load contributions','error');
+      } finally {
+        overlay.classList.add('hidden');
+      }
+    }
+
+    async function fetchDataset() {
+      dataset.innerHTML=''; overlay.classList.remove('hidden');
+      try {
+        const response = await fetch('http://localhost:5001/get-all-dataset', {
+          credentials: 'include'
+        });
+        if (response.status === 401) {
+          handleUnauthorized();
+          return;
+        }
+        if (!response.ok) {
+          throw new Error('Failed to fetch dataset');
+        }
+        const data = await response.json();
+        if (!data.data) {
+          throw new Error('Invalid data format');
+        }
+        data.data.forEach(e=>{
+          const tr=document.createElement('tr');
+          tr.className='hover:bg-teal-50 transition';
+          tr.innerHTML=`
+            <td class="px-6 py-4 text-gray-500 text-sm">${new Date(e.created_at).toLocaleString()}</td>
+            <td class="px-6 py-4 text-gray-700 text-sm">${e.text}</td>
+            <td class="px-6 py-4 text-teal-600 font-medium text-sm">${e.label}</td>`;
+          dataset.appendChild(tr);
+        });
+      } catch (error) {
+        console.error('Fetch dataset error:', error);
+        showToast('Failed to load dataset','error');
+      } finally {
+        overlay.classList.add('hidden');
+      }
+    }
+
+    async function updateStatus(id, status) {
+      if(!confirm(`Confirm ${status}?`)) return;
+      overlay.classList.remove('hidden');
+      try {
+        const res=await fetch('http://localhost:5001/update-status-contribution',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          credentials: 'include',
+          body:JSON.stringify({id,status})
+        });
+        if (res.status === 401) {
+          handleUnauthorized();
+          return;
+        }
+        if (!res.ok) {
+          throw new Error('Failed to update status');
+        }
+        const r=await res.json();
+        if(r.success){
+          // update badge
+          const row=document.querySelector(`tr[data-id="${id}"]`);
+          const span=row.querySelector('td:nth-child(6) span');
+          const cls=status==='approved'
+            ? 'bg-green-100 text-green-800'
+            : 'bg-red-100 text-red-800';
+          span.className=`px-2 inline-flex text-xs font-semibold rounded-full ${cls}`;
+          span.textContent=status;
+          // remove buttons
+          const ac=document.getElementById(`actions-${id}`);
+          if(ac) ac.innerHTML='';
+
+          showToast(`Successfully ${status}`,'success');
+        } else {
+          showToast(r.message || 'Update failed','error');
+        }
+      } catch (error) {
+        console.error('Update status error:', error);
+        showToast('Server error. Please try again.','error');
+      } finally {
+        overlay.classList.add('hidden');
+      }
+    }
+
+    function showToast(msg, type) {
+      toast.innerHTML = '';
+      const icon = type==='success'
+        ? '<svg class="h-5 w-5 text-green-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
+        : '<svg class="h-5 w-5 text-red-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+      toast.className=`fixed top-6 right-6 flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg text-white z-50 ${type==='success'?'bg-green-600':'bg-red-600'}`;
+      toast.innerHTML=`${icon}<span class="font-medium">${msg}</span>`;
+      toast.classList.remove('hidden');
+      setTimeout(()=>{
+        toast.classList.add('animate-fadeOut');
+        toast.addEventListener('animationend',()=>toast.classList.add('hidden'),{once:true});
+      },3000);
+    }
+  </script>
+</body>
+</html>
